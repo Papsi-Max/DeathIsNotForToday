@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find 'd:/Unreal Projects/DeathIsNotForToday/Content' -type f \\\\\\(-name *Input* -o -name *Action* -o -name *Mapping* \\\\\\))"
+    ]
+  }
+}
