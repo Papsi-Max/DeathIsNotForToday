@@ -55,7 +55,22 @@ void ADINFTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		{
 			EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADINFTPlayerCharacter::Look);
 		}
+		if (SprintAction)
+		{
+			EIC->BindAction(SprintAction, ETriggerEvent::Started,   this, &ADINFTPlayerCharacter::StartSprint);
+			EIC->BindAction(SprintAction, ETriggerEvent::Completed, this, &ADINFTPlayerCharacter::StopSprint);
+		}
 	}
+}
+
+void ADINFTPlayerCharacter::StartSprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+}
+
+void ADINFTPlayerCharacter::StopSprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
 void ADINFTPlayerCharacter::Move(const FInputActionValue& Value)
