@@ -7,6 +7,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "AbilitySystemComponent.h"
+#include "GA_MeleeAttack.h"
 
 ADINFTPlayerCharacter::ADINFTPlayerCharacter()
 {
@@ -23,6 +25,17 @@ ADINFTPlayerCharacter::ADINFTPlayerCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
 	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+}
+
+void ADINFTPlayerCharacter::PossessedBy(AController* NewController)
+{
+	// Super initialises the ASC via DINFTCharacter::InitializeAbilitySystem.
+	Super::PossessedBy(NewController);
+
+	if (MeleeAbilityClass && AbilitySystemComponent)
+	{
+		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(MeleeAbilityClass, 1));
+	}
 }
 
 void ADINFTPlayerCharacter::BeginPlay()
@@ -60,6 +73,18 @@ void ADINFTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 			EIC->BindAction(SprintAction, ETriggerEvent::Started,   this, &ADINFTPlayerCharacter::StartSprint);
 			EIC->BindAction(SprintAction, ETriggerEvent::Completed, this, &ADINFTPlayerCharacter::StopSprint);
 		}
+		if (AttackAction)
+		{
+			EIC->BindAction(AttackAction, ETriggerEvent::Started, this, &ADINFTPlayerCharacter::Attack);
+		}
+	}
+}
+
+void ADINFTPlayerCharacter::Attack()
+{
+	if (MeleeAbilityClass && AbilitySystemComponent)
+	{
+		AbilitySystemComponent->TryActivateAbilityByClass(MeleeAbilityClass);
 	}
 }
 
@@ -76,8 +101,6 @@ void ADINFTPlayerCharacter::StopSprint()
 void ADINFTPlayerCharacter::Move(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
-
-	UE_LOG(LogTemp, Warning, TEXT("Move | X=%.2f  Y=%.2f"), MovementVector.X, MovementVector.Y);
 
 	if (Controller)
 	{
