@@ -22,6 +22,7 @@ ADINFTPlayerCharacter::ADINFTPlayerCharacter()
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
+	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
 void ADINFTPlayerCharacter::BeginPlay()
