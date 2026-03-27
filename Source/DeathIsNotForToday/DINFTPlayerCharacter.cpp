@@ -9,6 +9,7 @@
 #include "InputActionValue.h"
 #include "AbilitySystemComponent.h"
 #include "GA_MeleeAttack.h"
+#include "ComboComponent.h"
 
 ADINFTPlayerCharacter::ADINFTPlayerCharacter()
 {
@@ -20,6 +21,8 @@ ADINFTPlayerCharacter::ADINFTPlayerCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
+
+	ComboComponent = CreateDefaultSubobject<UComboComponent>(TEXT("ComboComponent"));
 
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -35,6 +38,11 @@ void ADINFTPlayerCharacter::PossessedBy(AController* NewController)
 	if (MeleeAbilityClass && AbilitySystemComponent)
 	{
 		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(MeleeAbilityClass, 1));
+	}
+
+	if (ComboComponent && AbilitySystemComponent)
+	{
+		ComboComponent->GrantAbilities(AbilitySystemComponent);
 	}
 }
 
@@ -73,9 +81,9 @@ void ADINFTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 			EIC->BindAction(SprintAction, ETriggerEvent::Started,   this, &ADINFTPlayerCharacter::StartSprint);
 			EIC->BindAction(SprintAction, ETriggerEvent::Completed, this, &ADINFTPlayerCharacter::StopSprint);
 		}
-		if (AttackAction)
+		if (AttackAction && ComboComponent)
 		{
-			EIC->BindAction(AttackAction, ETriggerEvent::Started, this, &ADINFTPlayerCharacter::Attack);
+			EIC->BindAction(AttackAction, ETriggerEvent::Started, ComboComponent.Get(), &UComboComponent::TryAdvanceCombo);
 		}
 	}
 }

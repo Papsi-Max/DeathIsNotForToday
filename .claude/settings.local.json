@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find 'd:/Unreal Projects/DeathIsNotForToday/Content' -type f \\\\\\(-name *Input* -o -name *Action* -o -name *Mapping* \\\\\\))"
+      "Bash(find 'd:/Unreal Projects/DeathIsNotForToday/Content' -type f \\\\\\(-name *Input* -o -name *Action* -o -name *Mapping* \\\\\\))",
+      "Bash(find '/d/Unreal Projects/DeathIsNotForToday/Saved/Logs' -name *.log)",
+      "Bash(sort -t_ -k2)",
+      "Bash(find '/d/Unreal Projects/DeathIsNotForToday/Binaries' -name *.dll -o -name *.pdb)",
+      "Bash(find '/d/Unreal Projects/DeathIsNotForToday/Intermediate/Build' -name *.dll)",
+      "Read(//d/Unreal Projects/DeathIsNotForToday/**)",
+      "Bash(find '/d/Unreal Projects/DeathIsNotForToday/Saved/Logs' -name *.log -newer '/d/Unreal Projects/DeathIsNotForToday/Saved/Logs/DeathIsNotForToday_2.log')"
     ]
   }
 }

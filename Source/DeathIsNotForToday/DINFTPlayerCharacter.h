@@ -11,6 +11,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 class UGameplayAbility;
+class UComboComponent;
 struct FInputActionValue;
 
 UCLASS()
@@ -55,6 +56,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<UGameplayAbility> MeleeAbilityClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combo")
+	TObjectPtr<UComboComponent> ComboComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Speed")
 	float WalkSpeed = 300.f;
