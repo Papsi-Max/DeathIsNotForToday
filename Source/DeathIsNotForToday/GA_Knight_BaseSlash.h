@@ -21,16 +21,17 @@ public:
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		const FGameplayEventData* TriggerEventData) override;
 
-protected:
+public:
 	// Damage dealt to each target. Set by concrete subclasses.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	float DamageAmount = 0.f;
 
-	// Radius of the melee hit sphere, in cm.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
-	float AttackRange = 200.f;
-
 	// GE to apply — uses Data.Damage SetByCaller magnitude.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
+
+protected:
+	// Radius of the melee hit sphere, in cm.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	float AttackRange = 200.f;
 };

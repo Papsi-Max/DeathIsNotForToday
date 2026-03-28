@@ -8,8 +8,12 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
 #include "GA_MeleeAttack.h"
 #include "ComboComponent.h"
+#include "DINFTWeapon.h"
+#include "GA_Knight_BaseSlash.h"
+#include "DINFTGameplayTags.h"
 
 ADINFTPlayerCharacter::ADINFTPlayerCharacter()
 {
@@ -58,6 +62,20 @@ void ADINFTPlayerCharacter::BeginPlay()
 			{
 				Subsystem->AddMappingContext(DefaultMappingContext, 0);
 			}
+		}
+	}
+
+	if (WeaponClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = this;
+
+		CurrentWeapon = GetWorld()->SpawnActor<ADINFTWeapon>(WeaponClass, SpawnParams);
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->AttachToSocket(GetMesh(), TEXT("hand_r_socket"));
+			CurrentWeapon->OnHitTarget.AddUObject(this, &ADINFTPlayerCharacter::OnWeaponHit);
 		}
 	}
 }
@@ -127,4 +145,42 @@ void ADINFTPlayerCharacter::Look(const FInputActionValue& Value)
 
 	AddControllerYawInput(LookVector.X);
 	AddControllerPitchInput(LookVector.Y);
+}
+
+void ADINFTPlayerCharacter::OnWeaponHit(AActor* HitActor)
+{
+	if (!HitActor || !ComboComponent || !AbilitySystemComponent) return;
+
+	const int32 NumAbilities = ComboComponent->ComboAbilities.Num();
+	if (NumAbilities == 0) return;
+
+	// TryAdvanceCombo increments ComboIndex after activating the ability, so step
+	// back one to identify which combo step is currently in flight.
+	const int32 ActiveIndex = (ComboComponent->ComboIndex - 1 + NumAbilities) % NumAbilities;
+	TSubclassOf<UGameplayAbility> ActiveClass = ComboComponent->ComboAbilities[ActiveIndex];
+	if (!ActiveClass) return;
+
+	const UGA_Knight_BaseSlash* AbilityCDO = ActiveClass->GetDefaultObject<UGA_Knight_BaseSlash>();
+	if (!AbilityCDO || !AbilityCDO->DamageEffectClass) return;
+
+	IAbilitySystemInterface* TargetInterface = Cast<IAbilitySystemInterface>(HitActor);
+	if (!TargetInterface) return;
+
+	UAbilitySystemComponent* TargetASC = TargetInterface->GetAbilitySystemComponent();
+	if (!TargetASC) return;
+
+	FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
+	Context.AddSourceObject(this);
+
+	FGameplayEffectSpecHandle Spec = AbilitySystemComponent->MakeOutgoingSpec(
+		AbilityCDO->DamageEffectClass, 1, Context);
+
+	if (Spec.IsValid())
+	{
+		Spec.Data->SetSetByCallerMagnitude(TAG_Data_Damage, -AbilityCDO->DamageAmount);
+		AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), TargetASC);
+
+		UE_LOG(LogTemp, Log, TEXT("[DINFTPlayerCharacter] Combo step %d hit %s for %.0f damage"),
+			ActiveIndex, *GetNameSafe(HitActor), AbilityCDO->DamageAmount);
+	}
 }

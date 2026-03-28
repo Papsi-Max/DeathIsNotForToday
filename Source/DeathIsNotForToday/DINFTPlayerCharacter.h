@@ -12,6 +12,7 @@ class UInputMappingContext;
 class UInputAction;
 class UGameplayAbility;
 class UComboComponent;
+class ADINFTWeapon;
 struct FInputActionValue;
 
 UCLASS()
@@ -68,4 +69,17 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Speed")
 	float SprintSpeed = 900.f;
+
+	// Weapon actor class to spawn on BeginPlay. Set this in the Blueprint default.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<ADINFTWeapon> WeaponClass;
+
+	// The live weapon instance attached to the character's hand socket.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<ADINFTWeapon> CurrentWeapon;
+
+private:
+	// Called by the weapon's OnHitTarget delegate. Resolves the active combo step
+	// and applies its damage Gameplay Effect to HitActor via GAS.
+	void OnWeaponHit(AActor* HitActor);
 };
